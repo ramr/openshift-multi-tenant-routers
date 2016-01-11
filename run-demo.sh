@@ -8,6 +8,7 @@
 #                  -d | --dryrun   :  prints out a dry run.
 #                  -c | --cleanup  :  cleanup the test environment.
 #                  -g | --generate :  generates a script of commands.
+#                  -x              :  run script with bash -x
 #
 #  Example:
 #    run-demo.sh  --dry-run 
@@ -24,6 +25,8 @@
 #
 #    run-demo.sh  -d  -g 
 #
+#    run-demo.sh  -x  -d  -c
+#
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 
@@ -36,6 +39,7 @@ SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 #                  -d | --dryrun   :  prints out a dry run.
 #                  -c | --cleanup  :  cleanup the test environment.
 #                  -g | --generate :  generates a script of commands.
+#                  -x              :  run script with bash -x
 #
 #  Example:
 #    _run_demo_script  --dry-run 
@@ -52,16 +56,19 @@ SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 #
 #    _run_demo_script  -d  -g 
 #
+#    run-demo.sh  -x  -d  -c
+#
 function _run_demo_script() {
   local args=""
   local generate=0
+  local debug=""
 
   while [ $# -gt 0 ]; do
     case "$1" in
       -d|--dry-run)    args="--dry-run"  ;;
       -c|--cleanup)    args="--cleanup"  ;;
-      -g|--generate)  generate=1;      ;;
-
+      -g|--generate)   generate=1;       ;;
+      -x)              debug="-x"        ;;
       *) echo  "  - Unsupported option $1, ignoring ... " ;;
     esac
 
@@ -72,7 +79,7 @@ function _run_demo_script() {
     ${SCRIPT_DIR}/bin/demo.sh  --dry-run |  \
       grep "Running command: " |  cut -f 2- -d ':'
   else
-    ${SCRIPT_DIR}/bin/demo.sh  "${args}"
+    bash ${debug} ${DEBUG} ${SCRIPT_DIR}/bin/demo.sh  "${args}"
   fi
 
 }  #  End of function  _run_demo_script.

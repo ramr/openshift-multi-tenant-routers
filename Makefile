@@ -8,19 +8,30 @@ build:
 	(cd nodejs-header-echo &&  \
 	   git submodule update --init --recursive && make)
 
-run:	
+
+run:	build
+	@echo ""
 	@echo "  - Running demo script ... "
 	( ./run-demo.sh )
+
 
 clean:
 	@echo "  - Cleaning up test environment ... "
 	( ./run-demo.sh --cleanup)
 
-test:	
+
+debug:	build
+	@echo ""
+	@echo "  - Running demo script in debug ... "
+	( ./run-demo.sh -x )
+
+
+test:	build
 	@echo "  - Running demo script ... "
 	( ./run-demo.sh --generate > /tmp/test-script.sh )
 	@echo "  - Test script /tmp/test-script.sh generated. "
 
-verify:	
+
+verify:	build
 	@echo "  - Running demo script ... "
 	( ./run-demo.sh --dry-run )

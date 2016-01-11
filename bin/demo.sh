@@ -28,6 +28,7 @@ ROUTE_JSON="${EXAMPLE_REPO_DIR}/edge-secured-allow-http-route.json"
 DRY_RUN=0
 
 declare -A USERS=( [john]="jock" [paul]="macca" [george]="hari" [ringo]="ritchie" )
+# declare -A USERS=( [john]="jock" [paul]="macca" )
 
 declare -A PROJECTS=( [john]="imagine" [paul]="wings" [george]="wilburys" \
 		      [ringo]="allstarr" )
@@ -248,14 +249,20 @@ function _setup_routers() {
 #    _cleanup_test_env
 #
 function _cleanup_test_env() {
+  _log ""
+  _runcmd  oc login -u system:admin -n default
+
   for username in "${!USERS[@]}"; do
     local project="${PROJECTS[${username}]}"
 
     _log  "  - Deleting project ${project} ... "
-    _runcmd  oc delete project ${project} || :
+    if _runcmd  oc get project "${project}" &> /dev/null; then
+      _runcmd  oc delete project "${project}"
+    else
+      _log "  - Project ${project} does not exist."
+    fi
 
-    _log  "  - Deleting user ${username} ... "
-    _runcmd  oc delete user ${username} || :
+    _log  "   - User ${username} not deleted (reused by this script)."
   done
 
   _log "  - Cleaned up test environment. "
