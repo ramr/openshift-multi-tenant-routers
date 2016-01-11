@@ -1,0 +1,33 @@
+{
+    "kind": "SecurityContextConstraints",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "restricted-with-host-ports",
+        "annotations": {
+            "custom-router.io/description": "restricted-with-host-ports denies access to all host features except allowing host ports and requires pods to be run with a UID, and SELinux context that are allocated to the namespace."
+        }
+    },
+    "priority": null,
+    "allowPrivilegedContainer": false,
+    "allowedCapabilities": null,
+    "allowHostDirVolumePlugin": false,
+    "allowHostNetwork": false,
+    "allowHostPorts": true,
+    "allowHostPID": false,
+    "allowHostIPC": false,
+    "seLinuxContext": {
+        "type": "MustRunAs"
+    },
+    "runAsUser": {
+        "type": "MustRunAsRange"
+    },
+    "supplementalGroups": {
+        "type": "RunAsAny"
+    },
+    "fsGroup": {
+        "type": "RunAsAny"
+    },
+    "groups": [
+        "system:authenticated"
+    ]
+}
