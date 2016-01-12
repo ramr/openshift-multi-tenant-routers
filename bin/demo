@@ -1,0 +1,82 @@
+#!/bin/bash
+
+SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
+
+
+declare -A USERS=( [john]="jock" [paul]="macca" [george]="hari"
+                   [ringo]="ritchie" )
+# declare -A USERS=( [john]="jock" [paul]="macca" )
+
+declare -A PROJECTS=( [john]="imagine" [paul]="wings" [george]="wilburys" \
+                      [ringo]="allstarr" )
+
+declare -A ROUTES=( [john]="plastic.ohno.band"       \
+                    [paul]="bandicoot.on.the.run"    \
+                    [george]="all.things.must.paas"  \
+                    [ringo]="beaucoup.de.blues" )
+
+declare -A OFFSETS=( [john]=2000 [paul]=3000 [george]=4000 [ringo]=5000 )
+
+
+#
+#  Cleanup demo env (user, project, dc + service, route, service account and
+#  router) for the list of users.
+#
+#  Usage:   _cleanup_demo_env  <options>
+#
+#  Example:
+#    _cleanup_demo_env
+#
+#    _cleanup_demo_env  -x
+#
+function _cleanup_demo_env() {
+  shift   #  skip --cleanup arg.
+
+  local debug=""
+  [ "$1" == "-x" ] && debug="-x"
+
+  for username in "${!USERS[@]}"; do
+    local creds="${USER[${username}]}"
+    local project="${PROJECTS[${username}]}"
+    bash ${debug} ${SCRIPT_DIR}/cleanup  "${username}"  "${project}"
+  done
+
+}  #  End of function  _cleanup_demo_env.
+
+
+#
+#  Setup demo env (user, project, dc + service, route, service account and
+#  router) for the list of users.
+#
+#  Usage:   _setup_demo  <options>
+#
+#  Example:
+#    _setup_demo
+#
+#    _setup_demo  -x
+#
+function _setup_demo() {
+  local debug=""
+  [ "$1" == "-x" ] && debug="-x"
+
+  for username in "${!USERS[@]}"; do
+    local creds="${USER[${username}]}"
+    local project="${PROJECTS[${username}]}"
+    local route="${ROUTES[${username}]}"
+    local offset="${OFFSETS[${username}]}"
+
+    echo  "  - Setting up demo env for user: ${username} ... "
+    bash ${debug}  ${SCRIPT_DIR}/setup  "${username}"  "${project}"   \
+                                        "${route}"  "${offset}"
+  done
+
+}  #  End of function  _setup_demo.
+
+
+#
+#  main():
+#
+case "$1" in
+  --cleanup)  _cleanup_demo_env  "$@"  ;;
+  *)          _setup_demo        "$@"  ;;
+esac

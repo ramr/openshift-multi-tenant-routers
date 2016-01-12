@@ -12,27 +12,15 @@ build:
 demo:	build
 	@echo ""
 	@echo "  - Running demo script ... "
-	# ( ./bin/run-demo.sh )
-	( ./demo )
+	( ./bin/demo )
 
 
 clean:
 	@echo "  - Cleaning up test environment ... "
-	( ./demo --cleanup)
+	( ./bin/demo --cleanup)
 
 
 debug:	build
 	@echo ""
 	@echo "  - Running demo script in debug ... "
-	( ./bin/run-demo.sh -x )
-
-
-test:	build
-	@echo "  - Running demo script ... "
-	( ./bin/run-demo.sh --generate > /tmp/test-script.sh )
-	@echo "  - Test script /tmp/test-script.sh generated. "
-
-
-verify:	build
-	@echo "  - Running demo script ... "
-	( ./bin/run-demo.sh --dry-run )
+	( ./bin/demo -x )
