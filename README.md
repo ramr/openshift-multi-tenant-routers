@@ -23,31 +23,10 @@ Demo
         $  nohup ./_output/local/bin/linux/amd64/openshift start &> /tmp/openshift.log &
 
 
-2. Create a router service account and add it to the privileged SCC.
-
-        $  echo '{ "kind": "ServiceAccount", "apiVersion": "v1", "metadata": { "name": "router" } }' | oc create -f -
-
-
-        Either manually edit the privileged SCC and add the router account.
-
-        $  oc edit scc privileged
-        #  ...
-        #  users:
-        # - system:serviceaccount:openshift-infra:build-controller
-        # - system:serviceaccount:default:router
-
-        Or you can use jq to script it:
-
-        $  sudo yum install -y jq
-        $  oc get scc privileged -o json |
-             jq '.users |= .+ ["system:serviceaccount:default:router"]' |
-	     oc replace scc -f -
-
-
-3.  Run the demo script to create 4 different router environments running
+2.  Run the demo script to create 4 different router environments running
     scoped to and serving 4 different user namespaces.
 
-        $  make run
+        $  make demo
 
 
 

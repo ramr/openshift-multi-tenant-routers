@@ -11,7 +11,7 @@
 #                  -x              :  run script with bash -x
 #
 #  Example:
-#    run-demo.sh  --dry-run 
+#    run-demo.sh  --dry-run
 #
 #    run-demo.sh  --cleanup
 #
@@ -23,7 +23,7 @@
 #
 #    run-demo.sh  -g
 #
-#    run-demo.sh  -d  -g 
+#    run-demo.sh  -d  -g
 #
 #    run-demo.sh  -x  -d  -c
 #
@@ -42,7 +42,7 @@ SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 #                  -x              :  run script with bash -x
 #
 #  Example:
-#    _run_demo_script  --dry-run 
+#    _run_demo_script  --dry-run
 #
 #    _run_demo_script  --cleanup
 #
@@ -54,7 +54,7 @@ SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 #
 #    _run_demo_script  -g
 #
-#    _run_demo_script  -d  -g 
+#    _run_demo_script  -d  -g
 #
 #    run-demo.sh  -x  -d  -c
 #
@@ -76,10 +76,10 @@ function _run_demo_script() {
   done
 
   if [ ${generate} -eq 1 ]; then
-    ${SCRIPT_DIR}/bin/demo.sh  --dry-run |  \
+    ${SCRIPT_DIR}/demo.sh  --dry-run |  \
       grep "Running command: " |  cut -f 2- -d ':'
   else
-    bash ${debug} ${DEBUG} ${SCRIPT_DIR}/bin/demo.sh  "${args}"
+    bash ${debug} ${DEBUG} ${SCRIPT_DIR}/demo.sh  "${args}"
   fi
 
 }  #  End of function  _run_demo_script.

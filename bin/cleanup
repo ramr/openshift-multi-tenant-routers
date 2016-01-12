@@ -1,0 +1,40 @@
+#!/bin/bash -e
+
+#
+#  Cleanup env and router for an user.
+#
+#  Usage:  /path/to/setup.sh  <user>  <project>
+#            where <user>    = user name.
+#                  <project> = project name.
+#
+#  Example:
+#    ./setup.sh john imagine
+#
+#    ./setup.sh paul wings
+#
+
+SCRIPT_DIR=$(cd -P -- "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+
+
+#
+#  Cleanup env for a specific user.
+#
+#  Example:
+#    _cleanup_env  john  imagine
+#
+#    _cleanup_env  paul  wings
+#
+function  _cleanup_env() {
+  local username=$1
+  local project=$2
+
+  echo  "  - Deleting project ${project}: user=${username} ... "
+  oc delete project "${project}" &> /dev/null || :
+
+}  #  End of function  _cleanup_env.
+
+
+#
+#  main():
+#
+_cleanup_env  "$@"

@@ -1,0 +1,122 @@
+#!/bin/bash -e
+
+#
+#  Setup env and router for a user.
+#
+#  Usage:  /path/to/setup.sh  <user>  <project>  <route>  <offset>
+#            where <user>    = user name.
+#                  <project> = project name.
+#                  <route>   = route host name.
+#                  <offset>  = offset for ports.
+#
+#  Example:
+#    ./setup.sh john imagine plastic.ohno.band 2000
+#
+#    ./setup.sh paul wings bandicoot.on.the.run 3000
+#
+
+SCRIPT_DIR=$(cd -P -- "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+
+APP_CONFIG_DIR="${SCRIPT_DIR}/nodejs-header-echo/openshift"
+DC_JSON="${APP_CONFIG_DIR}/dc.json"
+SERVICE_JSON="${APP_CONFIG_DIR}/insecure-service.json"
+ROUTE_JSON="${APP_CONFIG_DIR}/edge-secured-allow-http-route.json"
+
+ROUTE_HOST="allow-http.header.test"
+RESTRICTED_SCC_NAME="restricted-with-host-ports"
+
+RESTRICTED_SCC_JSON="${SCRIPT_DIR}/${RESTRICTED_SCC_NAME}.json"
+
+
+#
+#  Setup env for a specific user (user, project, dc + service, route,
+#  service account and router).
+#
+#  Example:
+#    _setup  john  imagine  plastic.ohno.band     2000
+#
+#    _setup  paul  wings    bandicoot.on.the.run  3000
+#
+function  _setup() {
+  local username=${1:-"beatles"}
+  local project=${2:-"beatles"}
+  local route=${3:-"let.it.be"}
+  local offset=${4:-8000}
+  local cfgfile=/tmp/setup.kubeconfig
+
+  cp -f "${KUBECONFIG}" "${cfgfile}"
+  chmod +w  "${cfgfile}"
+  export KUBECONFIG="${cfgfile}"
+
+  echo "  - Creating user ${username} and ${project} ... "
+  oc login -u system:admin -n default &> /dev/null
+  oc login -u "${username}" -p abbeyroadstudios | head -n 1
+
+  oc get project "${project}"  &> /dev/null ||   \
+    oc new-project "${project}" &> /dev/null
+  oc project "${project}"
+
+  echo "  - Creating DC + insecure header test service ... "
+  oc delete -n "${project}" -f "${DC_JSON}"  &> /dev/null ||  :
+  oc create -n "${project}" -f "${DC_JSON}"
+
+  oc delete -n "${project}" -f "${SERVICE_JSON}"  &> /dev/null || :
+  oc create -n "${project}" -f "${SERVICE_JSON}"
+
+  echo "  - Creating route ... "
+  oc delete -n "${project}" header-test-http-allow &> /dev/null || :
+  cat "${ROUTE_JSON}" | sed "s#${ROUTE_HOST}#${route}#g;"  |  \
+     oc create -n "${project}" -f -
+
+  echo "  - Getting routes ... "
+  oc get routes -n "${project}"
+
+  echo "  - As system admin, checking router + service account ... "
+  oc login -u system:admin -n default &> /dev/null
+
+  echo "  - Creating router service account in project ${project} ... "
+  echo '{ "kind": "ServiceAccount", "apiVersion": "v1",
+          "metadata": { "name": "router" } }' |
+    oc create -n "${project}" -f -
+
+  if ! oc get scc "${RESTRICTED_SCC_NAME}" ;  then
+    oc create -f "${RESTRICTED_SCC_JSON}"
+  fi
+
+  local account="system:serviceaccount:${project}:router"
+  echo "  - Adding router service account in project ${project} to SCC ... "
+  if ! oc get scc "${RESTRICTED_SCC_NAME}" -o json |  \
+        grep "${account}" > /dev/null ; then
+    oc get scc "${RESTRICTED_SCC_NAME}" -o json |  \
+      jq ".users |= .+ [\"${account}\"]" |  oc replace scc -f -
+  fi
+
+  oadm router "router-${username}" -n "${project}"   \
+      --credentials=/tmp/admin.kubeconfig --latest-images  \
+      --service-account=router --host-network=false --replicas=1  \
+      --ports=80:$((offset + 80)),443:$((offset + 443))  \
+      --stats-port=$((offset + 1936))
+
+  local status=0
+  local uri="http://127.0.0.1:$((offset + 80))/"
+  local hdr="Host: ${route}"
+
+  echo  "  - Waiting for router router-${username} to start serving ... "
+  echo  "      curl -s -k -o /dev/null -w \"%{http_code}\" -H \"${hdr}\" \"${uri}\""
+  sleep 20
+  while [ "${status}" != "200" ]; do
+    echo -n "[${status}]."
+    status=$(curl -s -k -o /dev/null -w "%{http_code}" -H "${hdr}" "${uri}")
+    [ "${status}" != "200" ] && sleep 5
+  done
+
+  echo  ""
+  echo  "  - Router router-${username} is now available.  "
+
+}  #  End of function  _setup.
+
+
+#
+#  main():
+#
+_setup  "$@"

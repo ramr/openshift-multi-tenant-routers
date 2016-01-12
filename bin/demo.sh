@@ -28,7 +28,6 @@ ROUTE_JSON="${EXAMPLE_REPO_DIR}/edge-secured-allow-http-route.json"
 DRY_RUN=0
 
 declare -A USERS=( [john]="jock" [paul]="macca" [george]="hari" [ringo]="ritchie" )
-# declare -A USERS=( [john]="jock" [paul]="macca" )
 
 declare -A PROJECTS=( [john]="imagine" [paul]="wings" [george]="wilburys" \
 		      [ringo]="allstarr" )
@@ -50,14 +49,14 @@ declare -A OFFSETS=( [john]=2000 [paul]=3000 [george]=4000 [ringo]=5000 )
 #    _log "  - Example log message here from $(hostname -s) ... "
 #
 function _log() {
-  echo "$@" | tee -a ${LOGFILE} 
+  echo "$@" | tee -a ${LOGFILE}
 
-}  #  End of function  _log. 
+}  #  End of function  _log.
 
 #
 #  Run command and log output to the logfile.
 #
-#  Usage:  lrun <command> <args> ... 
+#  Usage:  lrun <command> <args> ...
 #
 function _runcmd() {
   if [ ${DRY_RUN} -eq 1 ]; then
@@ -86,7 +85,7 @@ function _runcmd() {
 
   return ${status}
 
-}  #  End of function  _runcmd. 
+}  #  End of function  _runcmd.
 
 
 #
@@ -218,8 +217,8 @@ function _setup_routers() {
 
     _log "  - Running command: oc get scc ${RESTRICTED_SCC_NAME} -o json | jq \".users |= .+ [\\\"${sa}\\\"]\" |  oc replace scc -f -"
     if ! oc get scc "${RESTRICTED_SCC_NAME}" -o json |   \
-	   grep "${acct}" > /dev/null ; then 
-        _log "  - Adding ${acct} to SCC ${RESTRICTED_SCC_NAME} ... " 
+	   grep "${acct}" > /dev/null ; then
+        _log "  - Adding ${acct} to SCC ${RESTRICTED_SCC_NAME} ... "
        oc get scc "${RESTRICTED_SCC_NAME}" -o json |  \
          jq ".users |= .+ [\"${acct}\"]" |  oc replace scc -f -
     fi

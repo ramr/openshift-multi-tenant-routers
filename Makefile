@@ -9,29 +9,30 @@ build:
 	   git submodule update --init --recursive && make)
 
 
-run:	build
+demo:	build
 	@echo ""
 	@echo "  - Running demo script ... "
-	( ./run-demo.sh )
+	# ( ./bin/run-demo.sh )
+	( ./demo )
 
 
 clean:
 	@echo "  - Cleaning up test environment ... "
-	( ./run-demo.sh --cleanup)
+	( ./demo --cleanup)
 
 
 debug:	build
 	@echo ""
 	@echo "  - Running demo script in debug ... "
-	( ./run-demo.sh -x )
+	( ./bin/run-demo.sh -x )
 
 
 test:	build
 	@echo "  - Running demo script ... "
-	( ./run-demo.sh --generate > /tmp/test-script.sh )
+	( ./bin/run-demo.sh --generate > /tmp/test-script.sh )
 	@echo "  - Test script /tmp/test-script.sh generated. "
 
 
 verify:	build
 	@echo "  - Running demo script ... "
-	( ./run-demo.sh --dry-run )
+	( ./bin/run-demo.sh --dry-run )
